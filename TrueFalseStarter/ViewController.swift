@@ -36,7 +36,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         loadGameStartSound()
         // Start game
-        //playGameStartSound()
+        playGameStartSound()
         displayQuestions()
         displayAnswer()
     }
