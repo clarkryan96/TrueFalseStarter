@@ -12,32 +12,33 @@ import AudioToolbox
 
 class ViewController: UIViewController {
     
+    // Variables alrady provided 
     let questionsPerRound = 4
     var questionsAsked = 0
     var correctQuestions = 0
     var indexOfSelectedQuestion: Int = 0
+    var questionProvider = QuestionProvider()
     
     var gameSound: SystemSoundID = 0
     
-    let trivia: [[String : String]] = [
-        ["Question": "Only female koalas can whistle", "Answer": "False"],
-        ["Question": "Blue whales are technically whales", "Answer": "True"],
-        ["Question": "Camels are cannibalistic", "Answer": "False"],
-        ["Question": "All ducks are birds", "Answer": "True"]
-    ]
-    
+    // All buttons and labels stored within main.storyboard connected
+    @IBOutlet weak var option1: UIButton!
+    @IBOutlet weak var option2: UIButton!
+    @IBOutlet weak var option3: UIButton!
+    @IBOutlet weak var option4: UIButton!
     @IBOutlet weak var questionField: UILabel!
-    @IBOutlet weak var trueButton: UIButton!
-    @IBOutlet weak var falseButton: UIButton!
     @IBOutlet weak var playAgainButton: UIButton!
     
+    
+    var correctAnswer = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
         loadGameStartSound()
         // Start game
-        playGameStartSound()
-        displayQuestion()
+        //playGameStartSound()
+        displayQuestions()
+        displayAnswer()
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,63 +46,96 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func displayQuestion() {
-        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: trivia.count)
-        let questionDictionary = trivia[indexOfSelectedQuestion]
-        questionField.text = questionDictionary["Question"]
+// Display a random question from the question array
+    func displayQuestions() {
+        indexOfSelectedQuestion = questionProvider.randomIndexOfSelectedQuestion()
+        let question = questionProvider.randomQuestion(indexOfSelectedQuestion: indexOfSelectedQuestion)
+        questionField.text = question
         playAgainButton.isHidden = true
     }
     
-    func displayScore() {
-        // Hide the answer buttons
-        trueButton.isHidden = true
-        falseButton.isHidden = true
+// Displays the answer choices for each question
+    func displayAnswer() {
+        let answerArray = questionProvider.randomAnswer(indexOfSelectedQuestion: indexOfSelectedQuestion)
         
-        // Display play again button
-        playAgainButton.isHidden = false
-        
-        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
-        
+        if answerArray.count == 4 {
+            option1.setTitle(answerArray[0], for: .normal)
+            option2.setTitle(answerArray[1], for: .normal)
+            option3.setTitle(answerArray[2], for: .normal)
+            option4.setTitle(answerArray[3], for: .normal)
+        }
     }
     
+// Shows the final score with a message
+    func displayScore() {
+        // Hides each answer button
+        option1.isHidden = true
+        option2.isHidden = true
+        option3.isHidden = true
+        option4.isHidden = true
+        
+        // Statement that will chnage depending on the score in the round
+        if correctQuestions == 4 {
+            questionField.text = "Looks like you know your Football! With a score of \(correctQuestions) out of \(questionsPerRound)."
+        }   else {
+            questionField.text = "Looks like we've still got a bit of work to do! You got \(correctQuestions) out of \(questionsPerRound)."
+        }
+        playAgainButton.isHidden = false
+    }
+
+// Action that will check the button pressed with the correct answer according to questionProvider Object
     @IBAction func checkAnswer(_ sender: UIButton) {
-        // Increment the questions asked counter
         questionsAsked += 1
         
-        let selectedQuestionDict = trivia[indexOfSelectedQuestion]
-        let correctAnswer = selectedQuestionDict["Answer"]
+        correctAnswer = questionProvider.getCorrectAnswerByQuestion(in: indexOfSelectedQuestion)
         
-        if (sender === trueButton &&  correctAnswer == "True") || (sender === falseButton && correctAnswer == "False") {
+        if (sender == option1 && option1.titleLabel?.text == correctAnswer) || (sender == option2 && option2.titleLabel?.text == correctAnswer) || (sender == option3 && option3.titleLabel?.text == correctAnswer) || (sender == option4 && option4.titleLabel?.text == correctAnswer) {
             correctQuestions += 1
             questionField.text = "Correct!"
-        } else {
-            questionField.text = "Sorry, wrong answer!"
+        }   else {
+            questionField.text = "Sorry wrong answer!"
         }
-        
+        removeQuestionFromGame()
         loadNextRoundWithDelay(seconds: 2)
     }
-    
+ 
+// Function that provides the user to play another round
     func nextRound() {
         if questionsAsked == questionsPerRound {
             // Game is over
             displayScore()
         } else {
             // Continue game
-            displayQuestion()
+            displayQuestions()
+            displayAnswer()
         }
     }
     
     @IBAction func playAgain() {
         // Show the answer buttons
-        trueButton.isHidden = false
-        falseButton.isHidden = false
+        option1.isHidden = false
+        option2.isHidden = false
+        option3.isHidden = false
+        option4.isHidden = false
         
+        resetQuestionsInGame()
         questionsAsked = 0
         correctQuestions = 0
+        
         nextRound()
     }
     
-
+// Function that stops any questions from repeating during a game
+    func removeQuestionFromGame() {
+        answeredQuestionIndexesCollection.append(questionProvider.questions[indexOfSelectedQuestion])
+        questionProvider.questions.remove(at: indexOfSelectedQuestion)
+    }
+    
+// Function that resets the list of possible questions during the round
+    func resetQuestionsInGame() {
+        questionProvider.questions.append(contentsOf: answeredQuestionIndexesCollection)
+        answeredQuestionIndexesCollection.removeAll()
+    }
     
     // MARK: Helper Methods
     

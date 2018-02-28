@@ -15,9 +15,8 @@ struct NewQuestions {
     var answer: String
 }
 
-// Struct holding each individual quaetion with answer choice and answers
-struct QuizQuestions {
-    var questions: [NewQuestions] = [
+struct QuestionProvider {
+var questions: [NewQuestions] = [
     NewQuestions(question: "Who won the FIFA world cup in 2014?", answerChoices: ["Spain", "Netherlands", "Argentina", "Germany"], answer: "Germany"),
     NewQuestions(question: "Who won the FIFA world cup in 2010?", answerChoices: ["Italy", "France", "Brazil", "Spain"], answer: "Spain"),
     NewQuestions(question: "Who won the FIFA world cup in 2006?", answerChoices: ["England", "Brazil", "Germany", "Italy"], answer: "Italy"),
@@ -28,32 +27,28 @@ struct QuizQuestions {
     NewQuestions(question: "Who was the top goal scorer in the 2006 FIFA world cup?", answerChoices: ["Hernan Crespo", "Ronaldo", "Zinedine Zidane", "Miroslav Klose"], answer: "Miroslav Klose"),
     NewQuestions(question: "Who was the top goal scorer in the 2002 FIFA world cup?", answerChoices: ["Rivaldo", "Ronaldo", "Alan Shearer", "Zinedine Zidane"], answer: "Ronaldo"),
     NewQuestions(question: "Who was the top goal scorer in the 1998 FIFA world cup?", answerChoices: ["Luis Henandez", "Gabriel Batistuta", "Ramon Ramirez", "Davor Suker"], answer: "Davor Suker")
-    ]
+]
 
-// Random selection form the array of questions
-    func randomIndexOfSelectedQuestions() -> Int {
-    let indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: questions.count)
-    return indexOfSelectedQuestion
+// Generating index from the question array
+    func randomIndexOfSelectedQuestion() -> Int {
+        let indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: questions.count)
+        return indexOfSelectedQuestion
     }
-    
-// Pulls the question value
+// Pulls the value from the question within NewQuestions
     func randomQuestion(indexOfSelectedQuestion: Int) -> String {
-        let questionCollection = questions[indexOfSelectedQuestion]
-        return questionCollection.question
+        let questionArray = questions[indexOfSelectedQuestion]
+        return questionArray.question
     }
-    
-// Random answers on each of the provided buttons
+// Allows answers to appear on different buttons when displaying
     func randomAnswer(indexOfSelectedQuestion: Int) -> [String] {
-        let questionCollection = questions[indexOfSelectedQuestion]
-        return questionCollection.answerChoices
+        let questionArray = questions[indexOfSelectedQuestion]
+        return questionArray.answerChoices
     }
-    
-// Function to return the correct answer
-    func correctAnswerToQuestion(indexOfSelectedQuestion: Int) -> String {
-        let questionCollection = questions[indexOfSelectedQuestion]
-        return questionCollection.answer
+// Returns the correct answer for the checkAnswer action to check against the button pressed by the user
+    func getCorrectAnswerByQuestion(in index: Int) -> String {
+        let questionArray = questions[index]
+        return questionArray.answer
     }
 }
-
-// Collection to hold the used questions so they aren't repeated
-var answeredQuestions = [NewQuestions]()
+// Collection that will hold the used question so they aren't repeated
+var answeredQuestionIndexesCollection = [NewQuestions]()
